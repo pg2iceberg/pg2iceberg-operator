@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- replication_v1alpha1_pg2iceberg.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples

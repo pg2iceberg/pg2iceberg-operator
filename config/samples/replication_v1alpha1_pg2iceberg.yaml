@@ -1,0 +1,48 @@
+apiVersion: replication.pg2iceberg.io/v1alpha1
+kind: Pg2Iceberg
+metadata:
+  name: orders-pipeline
+  namespace: data
+spec:
+  image: ghcr.io/pg2iceberg/pg2iceberg:latest
+  tables:
+    - name: public.orders
+      partition:
+        - day(created_at)
+    - name: public.users
+  source:
+    mode: logical
+    postgres:
+      host: postgres.data.svc.cluster.local
+      database: mydb
+      user: replicator
+      passwordRef:
+        name: pg-credentials
+        key: password
+    logical:
+      publicationName: pg2iceberg_pub
+      slotName: pg2iceberg_slot
+  sink:
+    catalogURI: http://iceberg-rest.data.svc.cluster.local:8181
+    warehouse: s3://warehouse/
+    namespace: default
+    s3:
+      endpoint: http://minio.data.svc.cluster.local:9000
+      accessKeyRef:
+        name: s3-credentials
+        key: access-key
+      secretKeyRef:
+        name: s3-credentials
+        key: secret-key
+    flushInterval: "10s"
+    flushRows: 1000
+  scaleToZero:
+    enabled: true
+    idleTimeout: "15m"
+    wakeCheckInterval: "30s"
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      memory: 2Gi
