@@ -184,19 +184,36 @@ type SinkSpec struct {
 	// catalogURI is the Iceberg REST catalog endpoint.
 	CatalogURI string `json:"catalogURI"`
 
-	// catalogAuth selects the catalog authentication method ("" or "sigv4").
+	// catalogAuth selects the catalog authentication method ("", "sigv4", or "bearer").
 	// +optional
-	// +kubebuilder:validation:Enum="";sigv4
+	// +kubebuilder:validation:Enum="";sigv4;bearer
 	CatalogAuth string `json:"catalogAuth,omitempty"`
 
+	// catalogTokenRef references a Secret key containing the Bearer token for catalog auth.
+	// Required when catalogAuth is "bearer".
+	// +optional
+	CatalogTokenRef *corev1.SecretKeySelector `json:"catalogTokenRef,omitempty"`
+
+	// credentialMode selects how S3 storage credentials are obtained.
+	// "static" (default) uses explicit S3 keys. "vended" uses temporary credentials
+	// provided by the catalog in LoadTable responses.
+	// +optional
+	// +kubebuilder:default="static"
+	// +kubebuilder:validation:Enum=static;vended
+	CredentialMode string `json:"credentialMode,omitempty"`
+
 	// warehouse is the Iceberg warehouse location (e.g. "s3://warehouse/").
-	Warehouse string `json:"warehouse"`
+	// Optional when credentialMode is "vended".
+	// +optional
+	Warehouse string `json:"warehouse,omitempty"`
 
 	// namespace is the Iceberg catalog namespace.
 	Namespace string `json:"namespace"`
 
 	// s3 configures S3-compatible object storage.
-	S3 S3Spec `json:"s3"`
+	// Optional when credentialMode is "vended".
+	// +optional
+	S3 *S3Spec `json:"s3,omitempty"`
 
 	// flushInterval controls the periodic flush timer (e.g. "10s").
 	// +optional

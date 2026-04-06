@@ -17,6 +17,7 @@ type resolvedSecrets struct {
 	pgPassword   string
 	s3AccessKey  string
 	s3SecretKey  string
+	catalogToken string // optional, for bearer auth
 	statePostgre string // optional
 }
 
@@ -72,11 +73,13 @@ type pg2icebergQuery struct {
 type pg2icebergSink struct {
 	CatalogURI                 string `json:"catalog_uri"`
 	CatalogAuth                string `json:"catalog_auth,omitempty"`
-	Warehouse                  string `json:"warehouse"`
+	CatalogToken               string `json:"catalog_token,omitempty"`
+	CredentialMode             string `json:"credential_mode,omitempty"`
+	Warehouse                  string `json:"warehouse,omitempty"`
 	Namespace                  string `json:"namespace"`
-	S3Endpoint                 string `json:"s3_endpoint"`
-	S3AccessKey                string `json:"s3_access_key"`
-	S3SecretKey                string `json:"s3_secret_key"`
+	S3Endpoint                 string `json:"s3_endpoint,omitempty"`
+	S3AccessKey                string `json:"s3_access_key,omitempty"`
+	S3SecretKey                string `json:"s3_secret_key,omitempty"`
 	S3Region                   string `json:"s3_region,omitempty"`
 	FlushInterval              string `json:"flush_interval,omitempty"`
 	FlushRows                  int32  `json:"flush_rows,omitempty"`
@@ -156,15 +159,19 @@ func buildConfigYAML(spec *replicationv1alpha1.Pg2IcebergSpec, secrets resolvedS
 	cfg.Sink = pg2icebergSink{
 		CatalogURI:                 spec.Sink.CatalogURI,
 		CatalogAuth:                spec.Sink.CatalogAuth,
+		CatalogToken:               secrets.catalogToken,
+		CredentialMode:             spec.Sink.CredentialMode,
 		Warehouse:                  spec.Sink.Warehouse,
 		Namespace:                  spec.Sink.Namespace,
-		S3Endpoint:                 spec.Sink.S3.Endpoint,
-		S3AccessKey:                secrets.s3AccessKey,
-		S3SecretKey:                secrets.s3SecretKey,
-		S3Region:                   spec.Sink.S3.Region,
 		FlushInterval:              spec.Sink.FlushInterval,
 		EventsPartition:            spec.Sink.EventsPartition,
 		MaterializerInterval:       spec.Sink.MaterializerInterval,
+	}
+	if spec.Sink.S3 != nil {
+		cfg.Sink.S3Endpoint = spec.Sink.S3.Endpoint
+		cfg.Sink.S3AccessKey = secrets.s3AccessKey
+		cfg.Sink.S3SecretKey = secrets.s3SecretKey
+		cfg.Sink.S3Region = spec.Sink.S3.Region
 	}
 	if spec.Sink.FlushRows != nil {
 		cfg.Sink.FlushRows = *spec.Sink.FlushRows

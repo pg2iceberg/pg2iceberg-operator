@@ -191,17 +191,27 @@ func (r *Pg2IcebergReconciler) resolveSecrets(ctx context.Context, cr *replicati
 	}
 	s.pgPassword = pgPass
 
-	s3Access, err := r.readSecretKey(ctx, cr.Namespace, cr.Spec.Sink.S3.AccessKeyRef)
-	if err != nil {
-		return s, fmt.Errorf("s3 access key: %w", err)
-	}
-	s.s3AccessKey = s3Access
+	if cr.Spec.Sink.S3 != nil {
+		s3Access, err := r.readSecretKey(ctx, cr.Namespace, cr.Spec.Sink.S3.AccessKeyRef)
+		if err != nil {
+			return s, fmt.Errorf("s3 access key: %w", err)
+		}
+		s.s3AccessKey = s3Access
 
-	s3Secret, err := r.readSecretKey(ctx, cr.Namespace, cr.Spec.Sink.S3.SecretKeyRef)
-	if err != nil {
-		return s, fmt.Errorf("s3 secret key: %w", err)
+		s3Secret, err := r.readSecretKey(ctx, cr.Namespace, cr.Spec.Sink.S3.SecretKeyRef)
+		if err != nil {
+			return s, fmt.Errorf("s3 secret key: %w", err)
+		}
+		s.s3SecretKey = s3Secret
 	}
-	s.s3SecretKey = s3Secret
+
+	if cr.Spec.Sink.CatalogTokenRef != nil {
+		token, err := r.readSecretKey(ctx, cr.Namespace, *cr.Spec.Sink.CatalogTokenRef)
+		if err != nil {
+			return s, fmt.Errorf("catalog token: %w", err)
+		}
+		s.catalogToken = token
+	}
 
 	if cr.Spec.State != nil && cr.Spec.State.PostgresURLRef != nil {
 		stateURL, err := r.readSecretKey(ctx, cr.Namespace, *cr.Spec.State.PostgresURLRef)
