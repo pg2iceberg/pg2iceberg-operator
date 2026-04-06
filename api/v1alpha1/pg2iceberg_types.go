@@ -155,6 +155,17 @@ type LogicalSpec struct {
 	// +kubebuilder:validation:Minimum=1
 	SnapshotConcurrency *int32 `json:"snapshotConcurrency,omitempty"`
 
+	// snapshotChunkPages is the number of PostgreSQL pages per CTID chunk
+	// during the initial snapshot. Defaults to 2048 (~16MB at 8KB/page).
+	// +optional
+	// +kubebuilder:validation:Minimum=1
+	SnapshotChunkPages *int32 `json:"snapshotChunkPages,omitempty"`
+
+	// snapshotTargetFileSize is the target Parquet file size in bytes for
+	// snapshot writes. Defaults to 128MB.
+	// +optional
+	SnapshotTargetFileSize *int64 `json:"snapshotTargetFileSize,omitempty"`
+
 	// standbyInterval is how often to confirm LSN back to PostgreSQL (e.g. "10s").
 	// +optional
 	StandbyInterval string `json:"standbyInterval,omitempty"`

@@ -57,10 +57,12 @@ type pg2icebergPostgres struct {
 }
 
 type pg2icebergLogical struct {
-	PublicationName     string `json:"publication_name"`
-	SlotName            string `json:"slot_name"`
-	SnapshotConcurrency int32  `json:"snapshot_concurrency,omitempty"`
-	StandbyInterval     string `json:"standby_interval,omitempty"`
+	PublicationName        string `json:"publication_name"`
+	SlotName               string `json:"slot_name"`
+	SnapshotConcurrency    int32  `json:"snapshot_concurrency,omitempty"`
+	SnapshotChunkPages     int32  `json:"snapshot_chunk_pages,omitempty"`
+	SnapshotTargetFileSize int64  `json:"snapshot_target_file_size,omitempty"`
+	StandbyInterval        string `json:"standby_interval,omitempty"`
 }
 
 type pg2icebergQuery struct {
@@ -135,6 +137,12 @@ func buildConfigYAML(spec *replicationv1alpha1.Pg2IcebergSpec, secrets resolvedS
 		}
 		if spec.Source.Logical.SnapshotConcurrency != nil {
 			l.SnapshotConcurrency = *spec.Source.Logical.SnapshotConcurrency
+		}
+		if spec.Source.Logical.SnapshotChunkPages != nil {
+			l.SnapshotChunkPages = *spec.Source.Logical.SnapshotChunkPages
+		}
+		if spec.Source.Logical.SnapshotTargetFileSize != nil {
+			l.SnapshotTargetFileSize = *spec.Source.Logical.SnapshotTargetFileSize
 		}
 		cfg.Source.Logical = l
 	}

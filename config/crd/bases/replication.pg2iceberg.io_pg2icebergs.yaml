@@ -1435,12 +1435,25 @@ spec:
                       slotName:
                         description: slotName is the replication slot name.
                         type: string
+                      snapshotChunkPages:
+                        description: |-
+                          snapshotChunkPages is the number of PostgreSQL pages per CTID chunk
+                          during the initial snapshot. Defaults to 2048 (~16MB at 8KB/page).
+                        format: int32
+                        minimum: 1
+                        type: integer
                       snapshotConcurrency:
                         description: |-
                           snapshotConcurrency controls parallel table snapshot workers.
                           Defaults to GOMAXPROCS.
                         format: int32
                         minimum: 1
+                        type: integer
+                      snapshotTargetFileSize:
+                        description: |-
+                          snapshotTargetFileSize is the target Parquet file size in bytes for
+                          snapshot writes. Defaults to 128MB.
+                        format: int64
                         type: integer
                       standbyInterval:
                         description: standbyInterval is how often to confirm LSN back
