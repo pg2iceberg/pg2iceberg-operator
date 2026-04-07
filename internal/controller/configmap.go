@@ -55,6 +55,7 @@ type pg2icebergPostgres struct {
 	Database string `json:"database"`
 	User     string `json:"user"`
 	Password string `json:"password"`
+	SSLMode  string `json:"sslmode,omitempty"`
 }
 
 type pg2icebergLogical struct {
@@ -89,6 +90,8 @@ type pg2icebergSink struct {
 	MaterializerInterval       string `json:"materializer_interval,omitempty"`
 	MaterializerTargetFileSize int64  `json:"materializer_target_file_size,omitempty"`
 	MaterializerConcurrency    int32  `json:"materializer_concurrency,omitempty"`
+	CompactionDataFiles        int32  `json:"compaction_data_files,omitempty"`
+	CompactionDeleteFiles      int32  `json:"compaction_delete_files,omitempty"`
 }
 
 type pg2icebergState struct {
@@ -130,6 +133,7 @@ func buildConfigYAML(spec *replicationv1alpha1.Pg2IcebergSpec, secrets resolvedS
 			Database: spec.Source.Postgres.Database,
 			User:     spec.Source.Postgres.User,
 			Password: secrets.pgPassword,
+			SSLMode:  spec.Source.Postgres.SSLMode,
 		},
 	}
 	if spec.Source.Logical != nil {
@@ -187,6 +191,12 @@ func buildConfigYAML(spec *replicationv1alpha1.Pg2IcebergSpec, secrets resolvedS
 	}
 	if spec.Sink.MaterializerConcurrency != nil {
 		cfg.Sink.MaterializerConcurrency = *spec.Sink.MaterializerConcurrency
+	}
+	if spec.Sink.CompactionDataFiles != nil {
+		cfg.Sink.CompactionDataFiles = *spec.Sink.CompactionDataFiles
+	}
+	if spec.Sink.CompactionDeleteFiles != nil {
+		cfg.Sink.CompactionDeleteFiles = *spec.Sink.CompactionDeleteFiles
 	}
 
 	// Metrics address

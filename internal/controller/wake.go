@@ -19,10 +19,14 @@ func checkWake(ctx context.Context, spec *replicationv1alpha1.Pg2IcebergSpec, se
 		port = *spec.Source.Postgres.Port
 	}
 
-	dsn := fmt.Sprintf("host=%s port=%d dbname=%s user=%s password=%s sslmode=disable",
+	sslMode := spec.Source.Postgres.SSLMode
+	if sslMode == "" {
+		sslMode = "disable"
+	}
+	dsn := fmt.Sprintf("host=%s port=%d dbname=%s user=%s password=%s sslmode=%s",
 		spec.Source.Postgres.Host, port,
 		spec.Source.Postgres.Database, spec.Source.Postgres.User,
-		secrets.pgPassword)
+		secrets.pgPassword, sslMode)
 
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()

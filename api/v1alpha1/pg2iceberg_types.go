@@ -139,6 +139,12 @@ type PostgresSpec struct {
 
 	// passwordRef references a Secret key containing the PostgreSQL password.
 	PasswordRef corev1.SecretKeySelector `json:"passwordRef"`
+
+	// sslMode controls the SSL connection mode (disable, require, verify-ca, verify-full).
+	// +optional
+	// +kubebuilder:default="disable"
+	// +kubebuilder:validation:Enum=disable;require;"verify-ca";"verify-full"
+	SSLMode string `json:"sslMode,omitempty"`
 }
 
 // LogicalSpec configures logical replication.
@@ -250,6 +256,18 @@ type SinkSpec struct {
 	// +optional
 	// +kubebuilder:validation:Minimum=1
 	MaterializerConcurrency *int32 `json:"materializerConcurrency,omitempty"`
+
+	// compactionDataFiles triggers compaction when data file count exceeds this.
+	// +optional
+	// +kubebuilder:default=20
+	// +kubebuilder:validation:Minimum=1
+	CompactionDataFiles *int32 `json:"compactionDataFiles,omitempty"`
+
+	// compactionDeleteFiles triggers compaction when delete file count exceeds this.
+	// +optional
+	// +kubebuilder:default=10
+	// +kubebuilder:validation:Minimum=1
+	CompactionDeleteFiles *int32 `json:"compactionDeleteFiles,omitempty"`
 }
 
 // S3Spec configures S3-compatible object storage credentials.
